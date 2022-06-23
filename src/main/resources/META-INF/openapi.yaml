@@ -1,0 +1,161 @@
+openapi: 3.0.1
+info:
+  title: API Description for NuzlockeHelper
+  version: "1.0"
+
+servers:
+  - url: http://localhost:8080/
+    description: Optional dev mode server description
+
+paths:
+  /pokemon:
+    get:
+      operationId: getFilteredPokemon
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Returns filtered List of Pokemon
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pokemon'
+  /routes:
+    get:
+      operationId: getFilteredRoutes
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Returns filtered List of Runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+
+  /runs:
+    get:
+      operationId: getAllRuns
+      responses:
+        200:
+          description: Returns all Runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Run'
+    post:
+      operationId: createRun
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+
+      responses:
+        201:
+          description: Returns the created Run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+
+  /runs/{runName}:
+    get:
+      operationId: getRunByName
+      parameters:
+        - in: path
+          name: runName
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Returns the Run by the given Name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunDetails'
+
+components:
+  schemas:
+    Pokemon:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type1:
+          type: string
+        type2:
+          type: string
+
+    CaughtPokemon:
+      type: object
+      properties:
+        id:
+          type: string
+        pokemon:
+          $ref: '#/components/schemas/Pokemon'
+        caughtBy:
+          $ref: '#/components/schemas/Account'
+
+    Run:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+
+    RunDetails:
+      type: object
+      properties:
+        run:
+          $ref: '#/components/schemas/Run'
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Route'
+
+    Route:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        pokemons:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaughtPokemon'
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string

@@ -1,0 +1,140 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet author="kejanu" id="1">
+        <createTable tableName="pokemon">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="name" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="type1" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="type2" type="UUID">
+                <constraints nullable="true"/>
+            </column>
+
+            <!--<column name="generation" type="INTEGER"/>-->
+            <column name="weight" type="DECIMAL"/>
+            <column name="height" type="DECIMAL"/>
+            <column name="base_happiness" type="INTEGER"/>
+
+            <column name="hp" type="INTEGER"/>
+            <column name="attack" type="INTEGER"/>
+            <column name="defense" type="INTEGER"/>
+            <column name="sp_attack" type="INTEGER"/>
+            <column name="sp_defense" type="INTEGER"/>
+            <column name="speed" type="INTEGER"/>
+        </createTable>
+
+        <createTable tableName="type">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="name" type="VARCHAR">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="type_effectiveness">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="attack_type" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__attack_type__type" references="type(id)"/>
+            </column>
+
+            <column name="defense_type" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__defense_type__type" references="type(id)"/>
+            </column>
+
+            <column name="multiplier" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createTable tableName="account">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="name" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="route">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="name" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="run">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="name" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="account_run">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="account" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__account_run__account" references="account(id)"/>
+            </column>
+
+            <column name="run" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__account_run__run" references="run(id)"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="pokemon_caught">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="run" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__run" references="run(id)"/>
+            </column>
+
+            <column name="caught_by" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__account" references="account(id)"/>
+            </column>
+
+            <column name="pokemon" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__pokemon" references="pokemon(id)"/>
+            </column>
+
+            <column name="route" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__route" references="route(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
