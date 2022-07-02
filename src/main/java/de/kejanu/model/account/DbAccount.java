@@ -19,7 +19,7 @@ public class DbAccount {
 
     @ManyToMany
     @JoinTable(
-            name = "account_run",
+            name = "run_account",
             joinColumns = {@JoinColumn( name = "account" )},
             inverseJoinColumns = {@JoinColumn( name = "run" )}
     )

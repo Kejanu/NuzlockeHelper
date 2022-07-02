@@ -5,8 +5,8 @@ import de.kejanu.model.run.DbRun;
 import javax.persistence.*;
 import java.util.UUID;
 
-@Entity (name = "account_run")
-public class DbAccountRun {
+@Entity (name = "run_account")
+public class DbRunAccount {
 
     @Id
     @GeneratedValue

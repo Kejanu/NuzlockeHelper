@@ -1,10 +1,7 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
-    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
     <changeSet author="kejanu" id="1">
@@ -25,7 +22,6 @@
                 <constraints nullable="true"/>
             </column>
 
-            <!--<column name="generation" type="INTEGER"/>-->
             <column name="weight" type="DECIMAL"/>
             <column name="height" type="DECIMAL"/>
             <column name="base_happiness" type="INTEGER"/>
@@ -65,7 +61,7 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        
+
         <createTable tableName="account">
             <column name="id" type="UUID">
                 <constraints primaryKey="true"/>
@@ -100,39 +96,65 @@
             </column>
         </createTable>
 
-        <createTable tableName="account_run">
+        <createTable tableName="run_account">
             <column name="id" type="UUID">
                 <constraints primaryKey="true"/>
+            </column>
+
+            <column name="run" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__run_account__run" references="run(id)"/>
             </column>
 
             <column name="account" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk__account_run__account" references="account(id)"/>
-            </column>
-
-            <column name="run" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk__account_run__run" references="run(id)"/>
+                <constraints nullable="false" foreignKeyName="fk__run_account__account" references="account(id)"/>
             </column>
         </createTable>
 
-        <createTable tableName="pokemon_caught">
+        <createTable tableName="encounter">
             <column name="id" type="UUID">
                 <constraints primaryKey="true"/>
             </column>
 
             <column name="run" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__run" references="run(id)"/>
-            </column>
-
-            <column name="caught_by" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__account" references="account(id)"/>
-            </column>
-
-            <column name="pokemon" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__pokemon" references="pokemon(id)"/>
+                <constraints nullable="false" foreignKeyName="fk__encounter__run" references="run(id)"/>
             </column>
 
             <column name="route" type="UUID">
-                <constraints nullable="false" foreignKeyName="fk__pokemon_caught__route" references="route(id)"/>
+                <constraints nullable="true" foreignKeyName="fk__encounter__route" references="route(id)"/>
+            </column>
+
+            <column name="in_team" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="dead" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <createTable tableName="encounter_pokemon">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="encounter" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk__encounter_pokemon__encounter"
+                             references="encounter(id)"/>
+            </column>
+
+            <column name="pokemon" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk__encounter_pokemon__pokemon"
+                             references="pokemon(id)"/>
+            </column>
+
+            <column name="caught_by" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk__encounter_account"
+                             references="account(id)"/>
             </column>
         </createTable>
     </changeSet>

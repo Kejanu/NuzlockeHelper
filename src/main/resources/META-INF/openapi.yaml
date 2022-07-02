@@ -89,7 +89,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RunDetails'
+                $ref: '#/components/schemas/Run'
+
+  /runs/{runId}/encounters:
+    post:
+      operationId: createEncounter
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: Returns the created RunRoute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+
+  /runs/{runId}/encounters/{encounterId}:
+    put:
+      operationId: updateEncounter
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: encounterId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: UpdateEncounter
+              properties:
+                routeId:
+                  type: string
+      responses:
+        200:
+          description: Returns the updated Encounter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Encounter'
 
 components:
   schemas:
@@ -125,20 +173,34 @@ components:
         createdAt:
           type: integer
           format: int64
-        accounts:
+        encounters:
           type: array
           items:
-            $ref: '#/components/schemas/Account'
+            $ref: '#/components/schemas/Encounter'
 
-    RunDetails:
+    Encounter:
       type: object
       properties:
-        run:
-          $ref: '#/components/schemas/Run'
-        routes:
+        id:
+          type: string
+        route:
+          $ref: '#/components/schemas/Route'
+        encounterPokemons:
           type: array
           items:
-            $ref: '#/components/schemas/Route'
+            $ref: '#/components/schemas/EncounterPokemon'
+        inTeam:
+          type: boolean
+        dead:
+          type: boolean
+
+    EncounterPokemon:
+      type: object
+      properties:
+        pokemon:
+          $ref: '#/components/schemas/Pokemon'
+        caughtBy:
+          $ref: '#/components/schemas/Account'
 
     Route:
       type: object

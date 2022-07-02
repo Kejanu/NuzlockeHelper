@@ -1,7 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {pokemonRemote} from "../remotes/pokemonRemote";
+import React, {useEffect, useRef, useState} from 'react';
 import {useDebounce} from "react-use";
-import {Pokemon} from "../remotes/shared";
 import {routeRemote} from "../remotes/routeRemote";
 
 export interface Route {
@@ -10,16 +8,18 @@ export interface Route {
 }
 
 interface Props {
-
+    onBlur: (value: string) => void;
+    route: Route;
 }
 
 const RouteSelect = (props: Props) => {
 
-    const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
-    const [routeName, setRouteName] = useState("");
+    const [selectedRoute, setSelectedRoute] = useState<Route | null>(props.route ?? null);
+    const [routeName, setRouteName] = useState(props.route?.name ?? "");
     const [fetchAgain, setFetchAgain] = useState(false);
     const [filteredRoutes, setFilteredRoutes] = useState<Route[]>([]);
     const [debouncedValue, setDebouncedValue] = useState("");
+    const [showFilteredRoutes, setShowFilteredRoutes] = useState(false);
 
     const [, cancel] = useDebounce(
         () => {
@@ -40,7 +40,7 @@ const RouteSelect = (props: Props) => {
 
     const handleOnSelectionClicked = (routeId: string) => {
         setFetchAgain(false);
-        setFilteredRoutes([]);
+        setShowFilteredRoutes(false);
 
         const foundRoute = filteredRoutes.filter(r => r.id === routeId)[0];
         setSelectedRoute(foundRoute);
@@ -49,7 +49,21 @@ const RouteSelect = (props: Props) => {
 
     const handleOnInputChanged = (pokemonName: string) => {
         setRouteName(pokemonName);
+        setShowFilteredRoutes(true);
         setFetchAgain(true);
+    }
+
+    function handleOnBlur(value: string) {
+        const foundRoute = filteredRoutes.find(r => r.name.toLowerCase() === value.toLowerCase());
+        setShowFilteredRoutes(false);
+
+        if (!foundRoute) {
+            setRouteName("");
+            return;
+        }
+
+        props.onBlur(foundRoute.id);
+        setShowFilteredRoutes(false);
     }
 
     return (
@@ -59,15 +73,17 @@ const RouteSelect = (props: Props) => {
                     className={'tw-border tw-rounded tw-w-full tw-p-2' + ' ' +
                         ' tw-text-white tw-bg-neutral-700 focus:tw-outline-white'
                     }
+                    onBlur={e => handleOnBlur(e.target.value)}
                     value={routeName}
                     onChange={e => handleOnInputChanged(e.target.value)}/>
-                <div className={'tw-absolute tw-mt-1 tw-w-full'}>
-                    {filteredRoutes.map(p => (
+                <div className={'tw-absolute tw-mt-1 tw-w-full tw-z-10'}>
+                    {showFilteredRoutes && filteredRoutes.map(p => (
                         <div
                             className={'tw-border tw-border-red-700 tw-p-2 tw-rounded tw-bg-neutral-700 tw-text-white tw-cursor-pointer ' +
                                 'hover:tw-bg-neutral-500'
                             }
                             key={p.name}
+                            onMouseDown={e => e.preventDefault()}
                             onClick={e => handleOnSelectionClicked(p.id)}>
                             {p.name}
                         </div>

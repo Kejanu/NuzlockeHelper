@@ -1,23 +1,20 @@
 package de.kejanu.model.pokemon;
 
 import de.kejanu.model.account.DbAccount;
-import de.kejanu.model.account.DbAccountRun;
-import de.kejanu.model.route.DbRoute;
-import de.kejanu.model.run.DbRun;
 
 import javax.persistence.*;
 import java.util.UUID;
 
-@Entity (name = "pokemon_caught")
-public class DbPokemonCaught {
+@Entity (name = "encounter_pokemon")
+public class DbEncounterPokemon {
 
     @Id
     @GeneratedValue
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "run")
-    private DbRun run;
+    @JoinColumn(name = "encounter")
+    private DbEncounter encounter;
 
     @ManyToOne
     @JoinColumn(name = "caught_by")
@@ -27,16 +24,16 @@ public class DbPokemonCaught {
     @JoinColumn(name = "pokemon")
     private DbPokemon pokemon;
 
-    @ManyToOne
-    @JoinColumn(name = "route")
-    private DbRoute route;
-
-    public DbRun getRun() {
-        return run;
+    public UUID getId() {
+        return id;
     }
 
-    public void setRun(DbRun run) {
-        this.run = run;
+    public DbEncounter getEncounter() {
+        return encounter;
+    }
+
+    public void setEncounter(DbEncounter encounter) {
+        this.encounter = encounter;
     }
 
     public DbAccount getCaughtBy() {
@@ -53,17 +50,5 @@ public class DbPokemonCaught {
 
     public void setPokemon(DbPokemon pokemon) {
         this.pokemon = pokemon;
-    }
-
-    public DbRoute getRoute() {
-        return route;
-    }
-
-    public void setRoute(DbRoute route) {
-        this.route = route;
-    }
-
-    public UUID getId() {
-        return id;
     }
 }

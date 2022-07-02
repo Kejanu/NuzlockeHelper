@@ -1,20 +1,30 @@
 package de.kejanu.model.run;
 
-import de.kejanu.model.account.DbAccount;
+import de.kejanu.core.Errors;
+import de.kejanu.core.ServiceException;
+import de.kejanu.model.pokemon.DbEncounter;
+import de.kejanu.model.pokemon.DbEncounterPokemon;
 import de.kejanu.model.pokemon.DbPokemon;
-import de.kejanu.model.pokemon.DbPokemonCaught;
-import de.kejanu.model.pokemon.PokemonCaughtRepository;
+import de.kejanu.model.pokemon.EncounterPokemonRepository;
 import de.kejanu.model.route.DbRoute;
+import de.kejanu.model.route.RouteRepository;
 import de.kejanu.util.Serializer;
 import io.quarkus.panache.common.Sort;
 import org.openapitools.api.RunsApi;
 import org.openapitools.model.*;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+@Transactional
 public class RunResource implements RunsApi {
+
+    @Inject
+    EntityManager entityManager;
 
     @Inject
     RunRepository runRepository;
@@ -23,75 +33,79 @@ public class RunResource implements RunsApi {
     RunService runService;
 
     @Inject
-    PokemonCaughtRepository pokemonCaughtRepository;
+    EncounterPokemonRepository encounterPokemonRepository;
+
+    @Inject
+    Serializer serializer;
+
+    @Inject
+    RouteRepository routeRepository;
 
     @Override
     public List<RunDto> getAllRuns() {
         return runRepository.listAll(Sort.descending("created_at"))
             .stream()
-            .map(Serializer::serializeRunToRunDto)
+            .map(run -> serializer.serializeRun(run))
             .toList();
     }
 
     @Override
-    public RunDetailsDto getRunByName(String runName) {
-        return serializeRunToDetailsDto(runRepository.findByName(runName));
+    public RunDto getRunByName(String runName) {
+        return serializer.serializeRun(runRepository.findByName(runName));
     }
 
     @Override
     public RunDto createRun(CreateRunRequestDto createRunRequestDto) {
         DbRun dbRun = runService.createRun(createRunRequestDto.getName());
-        return Serializer.serializeRunToRunDto(dbRun);
+        return serializer.serializeRun(dbRun);
     }
 
-    private RunDetailsDto serializeRunToDetailsDto(DbRun dbRun) {
-        List<DbPokemonCaught> dbPokemonCaughtList = pokemonCaughtRepository.findByRunId(dbRun.getId());
-
-        RunDetailsDto runDetailsDto = new RunDetailsDto();
-
-        RunDto runDto = new RunDto()
-            .id(dbRun.getId().toString())
-            .name(dbRun.getName());
-        runDetailsDto.setRun(runDto);
-
-        List<DbRoute> dbRouteList = dbPokemonCaughtList.stream().map(DbPokemonCaught::getRoute).distinct().toList();
-
-        // Create the Routes
-        List<RouteDto> routeDtoList = new ArrayList<>();
-        for ( DbRoute dbRoute : dbRouteList ) {
-            RouteDto routeDto = new RouteDto()
-                .id(dbRoute.getId().toString())
-                .name(dbRoute.getName())
-                .pokemons(new ArrayList<>());
-
-            routeDtoList.add(routeDto);
+    @Override
+    public EncounterDto updateEncounter(String runId, String encounterId, UpdateEncounterDto updateEncounterDto) {
+        DbEncounter dbEncounter = entityManager.find(DbEncounter.class, UUID.fromString(encounterId));
+        if (dbEncounter == null) {
+            throw new ServiceException("");
         }
 
-        runDetailsDto.setRoutes(routeDtoList);
-
-        for ( DbPokemonCaught dbPokemonCaught : dbPokemonCaughtList ) {
-            // Set Caught By Account
-            DbAccount account = dbPokemonCaught.getCaughtBy();
-            AccountDto accountDto = new AccountDto()
-                .id(account.getId().toString())
-                .name(account.getName());
-
-            CaughtPokemonDto caughtPokemonDto = new CaughtPokemonDto()
-                .id(dbPokemonCaught.getId().toString())
-                .caughtBy(accountDto)
-                // Set the caught Pokemon
-                .pokemon(serializePokemon(dbPokemonCaught.getPokemon()));
-
-            routeDtoList
-                .stream()
-                .filter(r -> r.getId().equals(dbPokemonCaught.getRoute().getId().toString()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("This shouldn't happen"))
-                .getPokemons()
-                .add(caughtPokemonDto);
+        DbRoute dbRoute = entityManager.find(DbRoute.class, UUID.fromString(updateEncounterDto.getRouteId()));
+        if ( dbRoute == null ) {
+            throw new ServiceException("");
         }
 
-        return runDetailsDto;
+        dbEncounter.setRoute(dbRoute);
+        return null;
+    }
+
+    @Override
+    public RouteDto createEncounter(String runId) {
+        DbRun dbRun = entityManager.find(DbRun.class, UUID.fromString(runId));
+        if ( dbRun == null ) {
+            throw Errors.runNotFound(runId);
+        }
+
+        DbEncounter dbEncounter = new DbEncounter();
+        dbEncounter.setRun(dbRun);
+        dbEncounter.setRoute(null);
+        entityManager.persist(dbEncounter);
+
+        dbRun
+            .getAccounts()
+            .forEach(dbAccount -> {
+                    DbEncounterPokemon dbEncounterPokemon = new DbEncounterPokemon();
+                    dbEncounterPokemon.setEncounter(dbEncounter);
+                    dbEncounterPokemon.setCaughtBy(dbAccount);
+                    entityManager.persist(dbEncounterPokemon);
+                }
+            );
+
+        return serializeEncounter(dbEncounter);
+    }
+
+    private RouteDto serializeEncounter(DbEncounter dbEncounter) {
+        return new RouteDto()
+            .id(dbEncounter.getId().toString())
+            .name(dbEncounter.getRoute() != null ? dbEncounter.getRoute().getName() : null)
+            .pokemons(new ArrayList<>());
     }
 
     private PokemonDto serializePokemon(DbPokemon dbPokemon) {

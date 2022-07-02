@@ -1,38 +1,46 @@
 import React, {FC, Fragment, useEffect, useState} from 'react';
 import Button from "../components/button";
-import produce from "immer";
-import PokemonSelect from "../components/PokemonSelect";
-import {RunRoute, Run, User, Pokemon} from "../remotes/shared";
+import {Encounter, Run} from "../remotes/shared";
 import {runRemote} from "../remotes/runRemote";
 import {useParams} from "react-router-dom";
-import RouteSelect from "../components/RouteSelect";
+import EncounterComponent from "../components/Encounter";
 
 interface Props {
-    // runName: string;
+
 }
 
 const RunDetailsPage: FC<Props> = (props: Props) => {
 
     const {runName} = useParams();
-    const [run, setRun] = useState<Run>({} as Run);
+    const [run, setRun] = useState<Run>();
 
     useEffect(() => {
+        fetchRun();
+    }, [runName]);
+
+    function fetchRun() {
         runRemote.getRunByName(runName!)
             .then(setRun)
             .catch(console.log);
-    }, [runName]);
-
+    }
 
     function addRoute() {
-        // setRoutes(produce((draft: Route[]) => {
-        //     draft[i].pokemons[j].name = value;
-        // }));
-        setRun(produce((draft: Run) => {
-            draft.routes.push({
-                name: "KEKW",
-                pokemons: [null, null, null]
-            });
-        }));
+        if (run) {
+            runRemote.createEncounter(run.id)
+                .then(() => {
+                    console.log("Successfully created Route")
+                    fetchRun();
+                });
+        }
+    }
+
+    function updateEncounterRoute(encounterId: string, routeId: string) {
+        if (run) {
+            runRemote.updateEncounter(run?.id, encounterId, routeId)
+                .then(() => {
+                    fetchRun();
+                })
+        }
     }
 
     const [testInput, setTestInput] = useState("");
@@ -63,18 +71,13 @@ const RunDetailsPage: FC<Props> = (props: Props) => {
                     <div className={'tw-col-span-2'}>
                         Kevin
                     </div>
-                    {run?.routes?.map((route, i) => (
+                    {run?.encounters?.map((encounter: Encounter, i: number) => (
                         <Fragment key={i}>
-                            <div className={'tw-col-span-1'}>
-                                <RouteSelect/>
-                            </div>
-                            {route.pokemons.map((pokemon, j) => (
-                                <div key={`${i}${j}`} className={'tw-col-span-2'}>
-                                    <PokemonSelect/>
-                                    {/*<input defaultValue={pokemon.name} onChange={e => handleInputChange()} onBlur={e => updateRoutes(e.target.value, i, j)}/>*/}
-                                </div>
-                            ))}
-
+                            <EncounterComponent
+                                key={i}
+                                encounter={encounter}
+                                updateEncounterRoute={updateEncounterRoute}
+                            />
                         </Fragment>
                     ))}
                 </div>

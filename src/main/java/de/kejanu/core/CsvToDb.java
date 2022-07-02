@@ -2,16 +2,13 @@ package de.kejanu.core;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
-import de.kejanu.model.pokemon.PokemonRepository;
+import de.kejanu.model.pokemon.*;
 import de.kejanu.model.account.AccountRepository;
 import de.kejanu.model.account.DbAccount;
-import de.kejanu.model.account.DbAccountRun;
-import de.kejanu.model.pokemon.DbPokemonCaught;
-import de.kejanu.model.pokemon.PokemonCaughtRepository;
+import de.kejanu.model.account.DbRunAccount;
 import de.kejanu.model.route.RouteRepository;
 import de.kejanu.model.run.DbRun;
 import de.kejanu.model.type.TypeRepository;
-import de.kejanu.model.pokemon.DbPokemon;
 import de.kejanu.model.route.DbRoute;
 import de.kejanu.model.type.DbType;
 import de.kejanu.model.type.DbTypeEffectiveness;
@@ -46,11 +43,11 @@ public class CsvToDb {
     AccountRepository accountRepository;
 
     @Inject
-    PokemonCaughtRepository pokemonCaughtRepository;
+    EncounterPokemonRepository encounterPokemonRepository;
 
     @Transactional
     public void insertSetUp() {
-        List<DbPokemonCaught> all = pokemonCaughtRepository.getAll();
+        List<DbEncounterPokemon> all = encounterPokemonRepository.listAll();
         if (all.size() > 0) {
             return;
         }
@@ -64,19 +61,23 @@ public class CsvToDb {
         entityManager.persist(dbRun);
 
         for (DbAccount account : accountList) {
-            DbAccountRun dbAccountRun = new DbAccountRun();
-            dbAccountRun.setRun(dbRun);
-            dbAccountRun.setAccount(account);
-            entityManager.persist(dbAccountRun);
+            DbRunAccount dbRunAccount = new DbRunAccount();
+            dbRunAccount.setRun(dbRun);
+            dbRunAccount.setAccount(account);
+            entityManager.persist(dbRunAccount);
         }
 
+        DbEncounter dbEncounter = new DbEncounter();
+        dbEncounter.setRoute(dbRoute);
+        dbEncounter.setRun(dbRun);
+        entityManager.persist(dbEncounter);
+
         for (DbAccount account : accountList) {
-            DbPokemonCaught dbPokemonCaught = new DbPokemonCaught();
-            dbPokemonCaught.setPokemon(squirtle);
-            dbPokemonCaught.setCaughtBy(account);
-            dbPokemonCaught.setRoute(dbRoute);
-            dbPokemonCaught.setRun(dbRun);
-            entityManager.persist(dbPokemonCaught);
+            DbEncounterPokemon dbEncounterPokemon = new DbEncounterPokemon();
+            dbEncounterPokemon.setPokemon(squirtle);
+            dbEncounterPokemon.setCaughtBy(account);
+            dbEncounterPokemon.setEncounter(dbEncounter);
+            entityManager.persist(dbEncounterPokemon);
         }
     }
 

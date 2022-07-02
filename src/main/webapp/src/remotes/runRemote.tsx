@@ -1,4 +1,4 @@
-import {Run} from "./shared";
+import {Run, RunRoute} from "./shared";
 
 export const runRemote = {
 
@@ -31,5 +31,30 @@ export const runRemote = {
             .then(response => {
                 return response.json();
             });
+    },
+    createEncounter: (runId: string): Promise<RunRoute> => {
+        return fetch(`/runs/${runId}/encounters`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => {
+                return response.json();
+            })
+    },
+    updateEncounter: (runId: string, encounterId: string, routeId: string): Promise<RunRoute> => {
+        return fetch(`/runs/${runId}/encounters/${encounterId}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                routeId: routeId
+            })
+        })
+            .then(response => {
+                return response.json();
+            })
     },
 }
