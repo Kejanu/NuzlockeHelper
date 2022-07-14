@@ -1,7 +1,5 @@
 package de.kejanu.model.route;
 
-import de.kejanu.model.pokemon.DbPokemon;
-import de.kejanu.model.type.DbType;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
