@@ -1,8 +1,10 @@
 import React, {FC} from "react";
-import RouteSelect from "./RouteSelect";
 import {Encounter, EncounterPokemon} from "../remotes/shared";
 import PokemonSelect from "./PokemonSelect";
-import {runRemote} from "../remotes/runRemote";
+import SearchSelect from "./SearchSelect";
+import {routeRemote} from "../remotes/routeRemote";
+import Button from "./button";
+import {InTeamIcon} from "./Icons";
 
 interface Props {
     updateEncounterRoute: (encounterId: string, value: string,) => void;
@@ -14,16 +16,23 @@ const EncounterComponent: FC<Props> = (props: Props) => {
     return (
         <>
             <div className={'tw-col-span-1'}>
-                <RouteSelect
-                    route={props.encounter.route}
-                    onBlur={(routeId: string) => props.updateEncounterRoute(props.encounter.id, routeId)}/>
+                <SearchSelect
+                    onBlur={(routeId: string) => props.updateEncounterRoute(props.encounter.id, routeId)}
+                    initialValue={props.encounter.route}
+                    fetchFilteredValues={routeRemote.getRoutes}
+                />
             </div>
             {props.encounter.encounterPokemons.map((encounterPokemon: EncounterPokemon, j: number) => (
                 <div key={j} className={'tw-col-span-2'}>
                     <PokemonSelect/>
-                    {/*<input defaultValue={pokemon.name} onChange={e => handleInputChange()} onBlur={e => updateRoutes(e.target.value, i, j)}/>*/}
                 </div>
             ))}
+            <div className={'tw-col-span-2'}>
+                <Button onClick={() => {
+                }}>
+                    <InTeamIcon/>
+                </Button>
+            </div>
         </>
     );
 }

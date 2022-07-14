@@ -1,8 +1,11 @@
-import {Route} from "../components/RouteSelect";
-
 export interface Account {
     id: string;
-    name:string;
+    name: string;
+}
+
+export interface Route {
+    id: string;
+    name: string;
 }
 
 export interface RunRoute {

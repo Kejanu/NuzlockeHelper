@@ -1,5 +1,4 @@
-import {Pokemon} from "./shared";
-import {Route} from "../components/RouteSelect";
+import {Pokemon, Route} from "./shared";
 
 
 export const routeRemote = {
