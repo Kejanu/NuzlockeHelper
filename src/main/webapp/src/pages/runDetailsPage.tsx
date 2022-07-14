@@ -9,7 +9,7 @@ interface Props {
 
 }
 
-const RunDetailsPage: FC<Props> = (props: Props) => {
+const RunDetailsPage: FC<Props> = () => {
 
     const {runName} = useParams();
     const [run, setRun] = useState<Run>();
@@ -58,7 +58,7 @@ const RunDetailsPage: FC<Props> = (props: Props) => {
     return (
         <div className={'tw-grid tw-grid-cols-1'}>
             <div className={'tw-col-span-1'}>
-                <div className={'tw-grid tw-grid-cols-7 tw-gap-4'}>
+                <div className={'tw-grid tw-grid-cols-9 tw-gap-4'}>
                     <div className={'tw-col-span-1'}>
                         Route
                     </div>
@@ -70,6 +70,9 @@ const RunDetailsPage: FC<Props> = (props: Props) => {
                     </div>
                     <div className={'tw-col-span-2'}>
                         Kevin
+                    </div>
+                    <div className={'tw-col-span-2'}>
+                        Actions
                     </div>
                     {run?.encounters?.map((encounter: Encounter, i: number) => (
                         <Fragment key={i}>
@@ -86,6 +89,7 @@ const RunDetailsPage: FC<Props> = (props: Props) => {
                     +
                 </Button>
             </div>
+
             {/*<div className={'tw-col-span-1'}>*/}
             {/*    SEARCH HERE*/}
             {/*</div>*/}
