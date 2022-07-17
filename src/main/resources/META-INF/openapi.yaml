@@ -131,6 +131,8 @@ paths:
               properties:
                 routeId:
                   type: string
+                inTeam:
+                  type: boolean
       responses:
         200:
           description: Returns the updated Encounter
@@ -138,6 +140,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Encounter'
+
+  /runs/{runId}/encounters/{encounterId}/{encounterPokemonId}:
+    put:
+      operationId: updateEncounterPokemon
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: encounterId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: encounterPokemonId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: UpdateEncounterPokemon
+              properties:
+                pokemonId:
+                  type: string
+      responses:
+        200:
+          description: Returns the updated EncounterPokemon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EncounterPokemon'
 
 components:
   schemas:
@@ -170,6 +208,10 @@ components:
           type: string
         name:
           type: string
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
         createdAt:
           type: integer
           format: int64
@@ -197,6 +239,8 @@ components:
     EncounterPokemon:
       type: object
       properties:
+        id:
+          type: string
         pokemon:
           $ref: '#/components/schemas/Pokemon'
         caughtBy:

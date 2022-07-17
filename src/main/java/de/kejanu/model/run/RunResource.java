@@ -8,7 +8,8 @@ import de.kejanu.model.pokemon.DbPokemon;
 import de.kejanu.model.pokemon.EncounterPokemonRepository;
 import de.kejanu.model.route.DbRoute;
 import de.kejanu.model.route.RouteRepository;
-import de.kejanu.util.Serializer;
+import de.kejanu.util.DtoMapper;
+import de.kejanu.util.Strings;
 import io.quarkus.panache.common.Sort;
 import org.openapitools.api.RunsApi;
 import org.openapitools.model.*;
@@ -36,7 +37,7 @@ public class RunResource implements RunsApi {
     EncounterPokemonRepository encounterPokemonRepository;
 
     @Inject
-    Serializer serializer;
+    DtoMapper dtoMapper;
 
     @Inject
     RouteRepository routeRepository;
@@ -45,35 +46,57 @@ public class RunResource implements RunsApi {
     public List<RunDto> getAllRuns() {
         return runRepository.listAll(Sort.descending("created_at"))
             .stream()
-            .map(run -> serializer.serializeRun(run))
+            .map(run -> dtoMapper.mapToRunDto(run))
             .toList();
     }
 
     @Override
     public RunDto getRunByName(String runName) {
-        return serializer.serializeRun(runRepository.findByName(runName));
+        return dtoMapper.mapToRunDto(runRepository.findByName(runName));
     }
 
     @Override
     public RunDto createRun(CreateRunRequestDto createRunRequestDto) {
         DbRun dbRun = runService.createRun(createRunRequestDto.getName());
-        return serializer.serializeRun(dbRun);
+        return dtoMapper.mapToRunDto(dbRun);
     }
 
     @Override
     public EncounterDto updateEncounter(String runId, String encounterId, UpdateEncounterDto updateEncounterDto) {
         DbEncounter dbEncounter = entityManager.find(DbEncounter.class, UUID.fromString(encounterId));
-        if (dbEncounter == null) {
+        if ( dbEncounter == null ) {
             throw new ServiceException("");
         }
 
-        DbRoute dbRoute = entityManager.find(DbRoute.class, UUID.fromString(updateEncounterDto.getRouteId()));
-        if ( dbRoute == null ) {
+        if ( !Strings.isBlank(updateEncounterDto.getRouteId()) ) {
+            DbRoute dbRoute = entityManager.find(DbRoute.class, UUID.fromString(updateEncounterDto.getRouteId()));
+            if ( dbRoute == null ) {
+                throw new ServiceException("");
+            }
+            dbEncounter.setRoute(dbRoute);
+        }
+
+        dbEncounter.setInTeam(updateEncounterDto.getInTeam() != null && updateEncounterDto.getInTeam());
+
+        return mapToEncounterDto(dbEncounter);
+    }
+
+    @Override
+    public EncounterPokemonDto updateEncounterPokemon(
+        String runId,
+        String encounterId,
+        String encounterPokemonId,
+        UpdateEncounterPokemonDto updateEncounterPokemonDto
+    ) {
+        DbEncounterPokemon dbEncounterPokemon = entityManager.find(DbEncounterPokemon.class, UUID.fromString(encounterPokemonId));
+
+        DbPokemon dbPokemon = entityManager.find(DbPokemon.class, UUID.fromString(updateEncounterPokemonDto.getPokemonId()));
+        if (dbPokemon == null) {
             throw new ServiceException("");
         }
 
-        dbEncounter.setRoute(dbRoute);
-        return null;
+        dbEncounterPokemon.setPokemon(dbPokemon);
+        return mapToEncounterPokemonDto(dbEncounterPokemon);
     }
 
     @Override
@@ -101,6 +124,24 @@ public class RunResource implements RunsApi {
         return serializeEncounter(dbEncounter);
     }
 
+    private EncounterDto mapToEncounterDto(DbEncounter dbEncounter) {
+        List<DbEncounterPokemon> encounterPokemonList = encounterPokemonRepository.findByEncounterId(dbEncounter.getId());
+
+        return new EncounterDto()
+            .id(dbEncounter.getId().toString())
+            .route(dbEncounter.getRoute() != null ? DtoMapper.serializeRoute(dbEncounter.getRoute()) : null)
+            .encounterPokemons(encounterPokemonList.stream().map(this::mapToEncounterPokemonDto).toList())
+            .dead(dbEncounter.isDead())
+            .inTeam(dbEncounter.isInTeam());
+    }
+
+    private EncounterPokemonDto mapToEncounterPokemonDto(DbEncounterPokemon dbEncounterPokemon) {
+        return new EncounterPokemonDto()
+            .id(dbEncounterPokemon.getId().toString())
+            .pokemon(serializePokemon(dbEncounterPokemon.getPokemon()))
+            .caughtBy(DtoMapper.serializeAccount(dbEncounterPokemon.getCaughtBy()));
+    }
+
     private RouteDto serializeEncounter(DbEncounter dbEncounter) {
         return new RouteDto()
             .id(dbEncounter.getId().toString())
@@ -109,6 +150,10 @@ public class RunResource implements RunsApi {
     }
 
     private PokemonDto serializePokemon(DbPokemon dbPokemon) {
+        if ( dbPokemon == null ) {
+            return null;
+        }
+
         return new PokemonDto().id(dbPokemon.getId().toString())
             .name(dbPokemon.getName())
             .type1(dbPokemon.getType1().getName())

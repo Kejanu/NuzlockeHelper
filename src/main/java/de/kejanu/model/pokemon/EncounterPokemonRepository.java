@@ -20,4 +20,15 @@ public class EncounterPokemonRepository implements PanacheRepository<DbEncounter
 
         return dbEncounterPokemonPanacheQuery.list();
     }
+
+    public List<DbEncounterPokemon> findByEncounterId(UUID encounterId) {
+
+        PanacheQuery<DbEncounterPokemon> dbEncounterPokemonPanacheQuery = find(
+            "encounter.id",
+            Sort.ascending("encounter.createdAt"),
+            encounterId
+        );
+
+        return dbEncounterPokemonPanacheQuery.list();
+    }
 }

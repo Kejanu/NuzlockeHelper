@@ -1,9 +1,10 @@
 import React, {FC, Fragment, useEffect, useState} from 'react';
 import Button from "../components/button";
-import {Encounter, Run} from "../remotes/shared";
+import {Encounter, EncounterPokemon, Run} from "../remotes/shared";
 import {runRemote} from "../remotes/runRemote";
 import {useParams} from "react-router-dom";
 import EncounterComponent from "../components/Encounter";
+import produce from "immer";
 
 interface Props {
 
@@ -34,12 +35,42 @@ const RunDetailsPage: FC<Props> = () => {
         }
     }
 
-    function updateEncounterRoute(encounterId: string, routeId: string) {
+    function updateEncounter(encounterId: string, routeId: string, inTeam: boolean) {
         if (run) {
-            runRemote.updateEncounter(run?.id, encounterId, routeId)
-                .then(() => {
-                    fetchRun();
+            runRemote.updateEncounter(run?.id, encounterId, routeId, inTeam)
+                .then((updatedEncounter: Encounter) => {
+                        setRun(produce(draft => {
+                            const index = run.encounters.findIndex(encounter => encounter.id === encounterId);
+                            if (index !== -1) {
+                                if (draft) {
+                                    draft.encounters[index] = updatedEncounter;
+                                }
+                            }
+                        }))
+                    }
+                );
+        }
+    }
+
+    function updateEncounterPokemon(encounterId: string, encounterPokemonId: string, pokemonId: string) {
+        if (run) {
+            runRemote.updateEncounterPokemon(run.id, encounterId, encounterPokemonId, pokemonId)
+                .then((updatedEncounterPokemon: EncounterPokemon) => {
+                    setRun(produce(draft => {
+                        const encounterIndex = run.encounters.findIndex(encounter => encounter.id === encounterId);
+                        if (encounterIndex !== -1) {
+                            const encounterPokemonIndex = run.encounters[encounterIndex]
+                                .encounterPokemons
+                                .findIndex(ep => ep.id === encounterPokemonId);
+                            if (encounterPokemonIndex !== -1) {
+                                if (draft) {
+                                    draft.encounters[encounterIndex].encounterPokemons[encounterPokemonIndex] = updatedEncounterPokemon;
+                                }
+                            }
+                        }
+                    }))
                 })
+                .catch(console.log)
         }
     }
 
@@ -79,7 +110,8 @@ const RunDetailsPage: FC<Props> = () => {
                             <EncounterComponent
                                 key={i}
                                 encounter={encounter}
-                                updateEncounterRoute={updateEncounterRoute}
+                                updateEncounter={updateEncounter}
+                                updateEncounterPokemon={updateEncounterPokemon}
                             />
                         </Fragment>
                     ))}

@@ -30,6 +30,7 @@ export interface Encounter {
 }
 
 export interface EncounterPokemon {
+    id: string;
     pokemon: Pokemon;
     caughtBy: Account;
 }

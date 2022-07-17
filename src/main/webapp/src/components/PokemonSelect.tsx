@@ -2,14 +2,16 @@ import React, {useEffect, useState} from 'react';
 import {pokemonRemote} from "../remotes/pokemonRemote";
 import {useDebounce} from "react-use";
 import {Pokemon} from "../remotes/shared";
+import SearchSelect from "./SearchSelect";
 
 interface Props {
-
+    pokemon: Pokemon;
+    updatePokemon: (pokemonId: string) => void;
 }
 
 const PokemonSelect = (props: Props) => {
 
-    const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
+    const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(props.pokemon);
     const [pokemonName, setPokemonName] = useState("");
     const [fetchAgain, setFetchAgain] = useState(false);
     const [filteredPokemon, setFilteredPokemon] = useState<Pokemon[]>([]);
@@ -42,41 +44,14 @@ const PokemonSelect = (props: Props) => {
             })
     }, [debouncedValue]);
 
-    const handleOnSelectionClicked = (pokemonId: string) => {
-        setFetchAgain(false);
-        setFilteredPokemon([]);
-
-        const foundPokemon = filteredPokemon.filter(p => p.id === pokemonId)[0];
-        setSelectedPokemon(foundPokemon);
-        setPokemonName(foundPokemon.name);
-    };
-
-    const handleOnInputChanged = (pokemonName: string) => {
-        setPokemonName(pokemonName);
-        setFetchAgain(true);
-    }
-
     return (
         <div className={'tw-grid tw-grid-cols-4 tw-border tw-rounded tw-p-1'}>
             <div className={'tw-col-span-2 tw-relative'}>
-                <input
-                    className={'tw-border tw-rounded tw-w-full tw-p-2' + ' ' +
-                        ' tw-text-white tw-bg-neutral-700 focus:tw-outline-white'
-                    }
-                    value={pokemonName}
-                    onChange={e => handleOnInputChanged(e.target.value)}/>
-                <div className={'tw-absolute tw-mt-1 tw-w-full'}>
-                    {filteredPokemon.map(p => (
-                        <div
-                            className={'tw-border tw-border-red-700 tw-p-2 tw-rounded tw-bg-neutral-700 tw-text-white tw-cursor-pointer ' +
-                                'hover:tw-bg-neutral-500'
-                            }
-                            key={p.name}
-                            onClick={e => handleOnSelectionClicked(p.id)}>
-                            {p.name}
-                        </div>
-                    ))}
-                </div>
+                <SearchSelect
+                    onBlur={(pokemonId: string) => props.updatePokemon(pokemonId)}
+                    initialValue={selectedPokemon}
+                    fetchFilteredValues={pokemonRemote.getPokemon}
+                />
             </div>
             <div className={'tw-col-span-2'}>
                 <div className={'tw-grid tw-grid-cols-2 tw-gap-x-2 tw-pl-2'}>

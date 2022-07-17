@@ -1,4 +1,4 @@
-import {Run, RunRoute} from "./shared";
+import {Encounter, EncounterPokemon, Run, RunRoute} from "./shared";
 
 export const runRemote = {
 
@@ -43,14 +43,29 @@ export const runRemote = {
                 return response.json();
             })
     },
-    updateEncounter: (runId: string, encounterId: string, routeId: string): Promise<RunRoute> => {
+    updateEncounter: (runId: string, encounterId: string, routeId: string, inTeam: boolean): Promise<Encounter> => {
         return fetch(`/runs/${runId}/encounters/${encounterId}`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                routeId: routeId
+                routeId: routeId,
+                inTeam: inTeam
+            })
+        })
+            .then(response => {
+                return response.json();
+            })
+    },
+    updateEncounterPokemon: (runId: string, encounterId: string, encounterPokemonId: string, pokemonId: string): Promise<EncounterPokemon> => {
+        return fetch(`/runs/${runId}/encounters/${encounterId}/${encounterPokemonId}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                pokemonId: pokemonId
             })
         })
             .then(response => {

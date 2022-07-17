@@ -7,7 +7,8 @@ import Button from "./button";
 import {InTeamIcon} from "./Icons";
 
 interface Props {
-    updateEncounterRoute: (encounterId: string, value: string,) => void;
+    updateEncounter: (encounterId: string, routeId: string, inTeam: boolean) => void;
+    updateEncounterPokemon: (encounterId: string, encounterPokemonId: string, pokemonId: string) => void;
     encounter: Encounter;
 }
 
@@ -17,18 +18,26 @@ const EncounterComponent: FC<Props> = (props: Props) => {
         <>
             <div className={'tw-col-span-1'}>
                 <SearchSelect
-                    onBlur={(routeId: string) => props.updateEncounterRoute(props.encounter.id, routeId)}
+                    onBlur={(routeId: string) => props.updateEncounter(props.encounter.id, routeId, props.encounter.inTeam)}
                     initialValue={props.encounter.route}
                     fetchFilteredValues={routeRemote.getRoutes}
                 />
             </div>
             {props.encounter.encounterPokemons.map((encounterPokemon: EncounterPokemon, j: number) => (
                 <div key={j} className={'tw-col-span-2'}>
-                    <PokemonSelect/>
+                    <PokemonSelect
+                        pokemon={encounterPokemon.pokemon}
+                        updatePokemon={(pokemonId: string) => props.updateEncounterPokemon(
+                            props.encounter.id,
+                            encounterPokemon.id,
+                            pokemonId
+                        )}
+                    />
                 </div>
             ))}
             <div className={'tw-col-span-2'}>
-                <Button onClick={() => {
+                <Button className={props.encounter.inTeam ? 'tw-bg-green-600' : ''} onClick={() => {
+                    props.updateEncounter(props.encounter.id, props.encounter.route?.id ?? null, !props.encounter.inTeam)
                 }}>
                     <InTeamIcon/>
                 </Button>
