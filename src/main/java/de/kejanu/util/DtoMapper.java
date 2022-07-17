@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class Serializer {
+public class DtoMapper {
 
     @Inject
     EncounterPokemonRepository encounterPokemonRepository;
@@ -29,7 +29,7 @@ public class Serializer {
     }
 
     public static RouteDto serializeRoute(DbRoute dbRoute) {
-        if (dbRoute == null) {
+        if ( dbRoute == null ) {
             return null;
         }
 
@@ -38,7 +38,7 @@ public class Serializer {
             .name(dbRoute.getName());
     }
 
-    public RunDto serializeRun(DbRun dbRun) {
+    public RunDto mapToRunDto(DbRun dbRun) {
         List<DbEncounterPokemon> encounterPokemonList = encounterPokemonRepository.findByRunId(dbRun.getId());
         LinkedHashMap<DbEncounter, List<DbEncounterPokemon>> dbRouteDbEncounterPokemonMap = encounterPokemonList
             .stream()
@@ -50,9 +50,17 @@ public class Serializer {
                 )
             );
 
+        List<AccountDto> accountDtos = encounterPokemonList
+            .stream()
+            .map(DbEncounterPokemon::getCaughtBy)
+            .distinct()
+            .map(DtoMapper::serializeAccount)
+            .toList();
+
         return new RunDto()
             .id(dbRun.getId().toString())
             .name(dbRun.getName())
+            .accounts(accountDtos)
             .createdAt(dbRun.getCreatedAt().toEpochMilli())
             .encounters(serializeEncounters(dbRouteDbEncounterPokemonMap));
     }
@@ -71,6 +79,7 @@ public class Serializer {
                             .stream()
                             .map(
                                 dbEncounterPokemon -> new EncounterPokemonDto()
+                                    .id(dbEncounterPokemon.getId().toString())
                                     .pokemon(
                                         dbEncounterPokemon.getPokemon() != null
                                             ? new PokemonDto()
