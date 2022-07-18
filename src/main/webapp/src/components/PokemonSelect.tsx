@@ -3,6 +3,7 @@ import {pokemonRemote} from "../remotes/pokemonRemote";
 import {useDebounce} from "react-use";
 import {Pokemon} from "../remotes/shared";
 import SearchSelect from "./SearchSelect";
+import classNames from "classnames";
 
 interface Props {
     pokemon: Pokemon;
@@ -17,6 +18,11 @@ const PokemonSelect = (props: Props) => {
     const [filteredPokemon, setFilteredPokemon] = useState<Pokemon[]>([]);
     const [debouncedValue, setDebouncedValue] = useState("");
 
+    useEffect(() => {
+        setSelectedPokemon(props.pokemon);
+    }, [props.pokemon]);
+
+
     const [, cancel] = useDebounce(
         () => {
             setDebouncedValue(pokemonName);
@@ -25,12 +31,44 @@ const PokemonSelect = (props: Props) => {
 
     const typeToColor = (type: string | undefined) => {
         switch (type) {
-            case 'Water':
-                return 'tw-bg-cyan-600';
+            case 'Normal':
+                return 'tw-bg-normal';
             case 'Fire':
-                return 'tw-bg-red-600';
+                return 'tw-bg-fire';
+            case 'Water':
+                return 'tw-bg-water';
+            case 'Grass':
+                return 'tw-bg-grass'
+            case 'Electric':
+                return 'tw-bg-electric tw-text-black'
+            case 'Ice':
+                return 'tw-bg-ice'
+            case 'Fighting':
+                return 'tw-bg-fighting'
+            case 'Poison':
+                return 'tw-bg-poison'
+            case 'Ground':
+                return 'tw-bg-ground'
+            case 'Flying':
+                return 'tw-bg-flying'
+            case 'Psychic':
+                return 'tw-bg-psychic'
+            case 'Bug':
+                return 'tw-bg-bug'
+            case 'Rock':
+                return 'tw-bg-rock'
+            case 'Ghost':
+                return 'tw-bg-ghost'
+            case 'Dragon':
+                return 'tw-bg-dragon'
+            case 'Dark':
+                return 'tw-bg-dark'
+            case 'Steel':
+                return 'tw-bg-steel'
+            case 'Fairy':
+                return 'tw-bg-fairy'
         }
-        return 'tw- bg-neutral-700';
+        return 'tw-bg-neutral-700';
     };
 
     useEffect(() => {
@@ -45,7 +83,7 @@ const PokemonSelect = (props: Props) => {
     }, [debouncedValue]);
 
     return (
-        <div className={'tw-grid tw-grid-cols-4 tw-border tw-rounded tw-p-1'}>
+        <div className={'tw-grid tw-grid-cols-4 tw-p-1'}>
             <div className={'tw-col-span-2 tw-relative'}>
                 <SearchSelect
                     onBlur={(pokemonId: string) => props.updatePokemon(pokemonId)}
@@ -54,15 +92,25 @@ const PokemonSelect = (props: Props) => {
                 />
             </div>
             <div className={'tw-col-span-2'}>
-                <div className={'tw-grid tw-grid-cols-2 tw-gap-x-2 tw-pl-2'}>
-                    <div
-                        className={'tw-p-2 tw-w-full tw-text-center tw-rounded ' + typeToColor(selectedPokemon?.type1)}>
-                        {selectedPokemon?.type1}
-                    </div>
-                    <div
-                        className={'tw-p-2 tw-w-full tw-text-center tw-rounded ' + typeToColor(selectedPokemon?.type2)}>
-                        {selectedPokemon?.type2}
-                    </div>
+                <div className={`tw-grid tw-h-full tw-grid-cols-2 tw-gap-x-1`}>
+                    {selectedPokemon?.type1 && (
+                        <div
+                            className={classNames([
+                                'tw-grid tw-h-full tw-content-center tw-text-center tw-rounded tw-font-medium',
+                                typeToColor(selectedPokemon?.type1)
+                            ])}>
+                            {selectedPokemon?.type1}
+                        </div>
+                    )}
+                    {selectedPokemon?.type2 && (
+                        <div
+                            className={classNames([
+                                'tw-grid tw-h-full tw-content-center tw-text-center tw-rounded tw-font-medium',
+                                typeToColor(selectedPokemon?.type2)
+                            ])}>
+                            {selectedPokemon?.type2}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

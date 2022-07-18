@@ -76,28 +76,26 @@ const SearchSelect = (props: Props) => {
     }
 
     return (
-        <div className={'tw-grid tw-grid-cols-4 tw-border tw-rounded tw-p-1'}>
-            <div className={'tw-col-span-4 tw-relative'}>
-                <input
-                    className={'tw-border tw-rounded tw-w-full tw-p-2' + ' ' +
-                        ' tw-text-white tw-bg-neutral-700 focus:tw-outline-white'
-                    }
-                    onBlur={e => handleOnBlur(e.target.value)}
-                    value={currentValue}
-                    onChange={e => handleOnInputChanged(e.target.value)}/>
-                <div className={'tw-absolute tw-mt-1 tw-w-full tw-z-10'}>
-                    {showFilteredResults && filteredValues.map(value => (
-                        <div
-                            className={'tw-border tw-border-red-700 tw-p-2 tw-rounded tw-bg-neutral-700 tw-text-white tw-cursor-pointer ' +
-                                'hover:tw-bg-neutral-500'
-                            }
-                            key={value.id}
-                            onMouseDown={e => e.preventDefault()}
-                            onClick={e => handleOnFilteredElementClicked(value.name)}>
-                            {value.name}
-                        </div>
-                    ))}
-                </div>
+        <div className={'tw-relative'}>
+            <input
+                className={'tw-border tw-rounded tw-w-full tw-p-2' + ' ' +
+                    ' tw-text-white tw-bg-neutral-700 focus:tw-outline-white'
+                }
+                onBlur={e => handleOnBlur(e.target.value)}
+                value={currentValue}
+                onChange={e => handleOnInputChanged(e.target.value)}/>
+            <div className={'tw-absolute tw-mt-1 tw-w-full tw-z-10'}>
+                {showFilteredResults && filteredValues.map(value => (
+                    <div
+                        className={'tw-border tw-border-red-700 tw-p-2 tw-rounded tw-bg-neutral-700 tw-text-white tw-cursor-pointer ' +
+                            'hover:tw-bg-neutral-500'
+                        }
+                        key={value.id}
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={e => handleOnFilteredElementClicked(value.name)}>
+                        {value.name}
+                    </div>
+                ))}
             </div>
         </div>
     );

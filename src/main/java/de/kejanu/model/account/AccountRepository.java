@@ -1,6 +1,5 @@
 package de.kejanu.model.account;
 
-import de.kejanu.model.route.DbRoute;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 import javax.enterprise.context.ApplicationScoped;

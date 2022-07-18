@@ -1,6 +1,9 @@
 package de.kejanu.util;
 
+import de.kejanu.model.account.AccountRepository;
 import de.kejanu.model.account.DbAccount;
+import de.kejanu.model.account.DbRunAccount;
+import de.kejanu.model.account.RunAccountRepository;
 import de.kejanu.model.pokemon.DbEncounter;
 import de.kejanu.model.pokemon.DbEncounterPokemon;
 import de.kejanu.model.pokemon.EncounterPokemonRepository;
@@ -11,6 +14,7 @@ import org.openapitools.model.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +25,9 @@ public class DtoMapper {
 
     @Inject
     EncounterPokemonRepository encounterPokemonRepository;
+
+    @Inject
+    RunAccountRepository runAccountRepository;
 
     public static AccountDto serializeAccount(DbAccount dbAccount) {
         return new AccountDto()
@@ -50,9 +57,9 @@ public class DtoMapper {
                 )
             );
 
-        List<AccountDto> accountDtos = encounterPokemonList
+        List<AccountDto> accountDtos = runAccountRepository.findByRunId(dbRun.getId())
             .stream()
-            .map(DbEncounterPokemon::getCaughtBy)
+            .map(DbRunAccount::getAccount)
             .distinct()
             .map(DtoMapper::serializeAccount)
             .toList();
